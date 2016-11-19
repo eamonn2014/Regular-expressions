@@ -1,0 +1,219 @@
+---
+title: "Regular Expression Examples in R"
+author: "Eamonn"
+date: '`r format(Sys.time(), "%d %B, %Y")`'
+header-includes:
+- \usepackage{eso-pic,graphicx,transparent}
+- \usepackage{graphicx}
+- \usepackage{fancyhdr}
+- \pagestyle{fancy}
+- \setlength\headheight{22pt}
+- \fancyfoot[RO]{Data Management}
+- \usepackage{lastpage}
+- \cfoot{Page \thepage\ of \pageref{LastPage}}
+output:
+  pdf_document:
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 8
+    number_sections: no
+  html_document: default
+  word_document: default
+---
+ 
+ 
+\AddToShipoutPictureFG{
+  \AtPageCenter{% or \AtTextCenter
+    \makebox[0pt]{\rotatebox[origin=c]{45}{%
+      \scalebox{5}{\texttransparent{0.3}{  }}%
+    }}
+  }
+}
+ 
+ 
+ 
+```{r set-options, echo=FALSE, cache=FALSE, warning = FALSE}
+ 
+        rm(list=ls())
+ 
+        set.seed(123)
+        startTime<-proc.time()
+        library(knitr)
+        options(width=70)
+        opts_chunk$set(comment = "", warning = FALSE, message = FALSE,
+                       echo = FALSE, tidy = FALSE, size="tiny",  cache=FALSE,
+                       progress=TRUE,
+                       cache.path = 'program_Cache/',
+                       fig.path='figure/')
+         
+        knitr::knit_hooks$set(inline = function(x) {
+          knitr:::format_sci(x, 'md')
+        })
+         
+        
+```
+ 
+<!-- \begin{figure}[t!] -->
+<!--   \centering -->
+<!--     \includegraphics[keepaspectratio, width=0.2\textwidth]{LOGO.png} -->
+<!--   \label{fig:RSUencountered} -->
+<!-- \end{figure} -->
+ 
+ 
+ 
+ 
+```{r prerequisites, echo=FALSE}
+
+        where<-"home"
+        x  <- "Users\\User\\Documents\\GIT"
+        
+        path <- paste(x,"\\Regular-expressions",sep="")
+        path2 <- paste(x,"\\DATA",sep="")
+        
+        work<-    paste("C:/", path, sep = "")
+        nonwork<- paste("C:/", path, sep = "")
+        if (where=="home") {wd<- nonwork} else {wd<-work}
+        
+        work2<-    paste("X:/", path2, sep = "")
+        nonwork2<- paste("~/X/", path2, sep = "")
+        if (where=="home") {wd2<- nonwork2} else {wd2<-work2}
+        
+        work3<-    paste("X:/FUNCTIONS/R", sep = "")
+        nonwork3<- paste("~/X/FUNCTIONS/R", sep = "")
+        if (where=="home") {wd3<- nonwork3} else {wd3<-work3}
+        
+        setwd(wd)
+        opts_knit$set(root.dir = wd)                  ##THIS SETS YOUR WORKING DIRECTORY
+        
+```
+```{r preliminaries perhaps , echo=FALSE, results='hide'}
+ 
+        p3 <- function(x) {formatC(x, format="f", digits=3)}
+        p4 <- function(x) {formatC(x, format="f", digits=4)}
+        p2 <- function(x) {formatC(x, format="f", digits=2)}
+        p1 <- function(x) {print(formatC(x, format="f", digits=1),quote=FALSE)}
+        
+        #perhaps help colour plot text based on loop count
+        is.even <- function(x){ x %% 2 == 0 }
+ 
+#### Load relevant packages
+list.of.packages <- c("plyr", "stringr")
+ 
+        new.packages <- 
+                list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+        if(length(new.packages)) install.packages(new.packages)
+        
+        sapply(X = list.of.packages, require, character.only = TRUE)
+        
+```
+ 
+ 
+```{r reg expressions, echo=TRUE, results='markdown' }
+ 
+  # example of regular expression use
+      
+      d <- c("0011070009_CFFP", "0011070001-M1_XY1", "0011070001-M2_XY1", 
+             "0011070002-M1_XY1", "0011070002-M2_XY1", "0011070003-M1_XY1", 
+             "0011070003-M2_XY1", "0011070005_NPC", "0011070013_CPPS1", "0011070017_CPPS2")
+      
+      # parsing a variable in which characters - and _ appear
+      
+      (tmp <- gsub("(.*)\\_.*", "\\1", d )) # remove all after first occurance of _
+      
+      gsub("(.*)\\-.*", "\\1", tmp)         # remove all after first occurance of -
+      
+      gsub(".*\\-","",d)                    # remove before and including -
+      
+      gsub("\\-.*","", d)                   # remove all text after -
+      
+      gsub("^.*7", "", d)                   # remove all text before and including 7
+      
+      gsub('.{2}$', '', d)                  # remove last two characters
+      
+      sub('.*(?=.{2}$)', '', d , perl=T)    # extract last two characters
+      
+      sub('.*(?=.{1}$)', '', d , perl=T)    # extract last character
+      
+      sub("[_][^_]*", "", d)                # remove underscore
+      
+      gsub("001107000", "", d)              # remove these characters 
+      
+      d[grepl("CFFP", d) ]                  # pull out using grep
+      
+      # select characters before first occurance of 3 
+      gsub("(.*?)(3.*)", "\\1",d)    
+      
+      sub('_([^_]*.)$', '',  d )            # remove after and including _
+      
+      x <- gsub("001107000","0070 10 0", d) # introduce spaces
+      gsub("[\\ \\ ]", "",                  # select all text between " " and " "
+           regmatches(x, 
+                      gregexpr("\\ .*?\\ ", x)))
+      
+      gsub("(.*?)( .*)", "\\1", x)          # select chars before 1st space
+      gsub("(.*?)( .*)", "\\2", x)          # select chars after 1st space
+      
+      
+      (x <- gsub("^.*?M","", d))            # extract characters after M
+       gsub("(.*?)(P.*)", "\\1", x)         # then select all before first occurance of P 
+      
+      # Extract all before first occurance of M and 000
+      gsub("(.*?)(M.*)", "\\1", d )
+      gsub("(.*?)(000.*)", "\\1", d )  
+      
+      
+      x <- gsub("001107000","0070 1000", d) # introduce a space
+      gsub( " .*$", "", x )                 # remove everything after the occurance of the blank space
+      
+      gsub("[[:space:]]", "", x)            # remove space(s?)
+      
+      
+      # using grep and ifelse to create variables
+      
+      ifelse(grepl("M1",  d ),1,
+             ifelse(grepl("PC",  d ), 0, 2))
+      
+      ifelse(grepl("NPC",  d),"NPC",
+             ifelse(grepl("CFFP",  d), "CFFP", "Clinical"))
+      
+      x <- gsub("001107000","0070 1000", d) # introduce a space
+      stringr::word(x, 1)                   # extract first word  
+      
+      # replacing values in variable 
+      d<- as.character(d)
+      plyr::mapvalues(d, from = c("0011070013_CPPS1", "0011070001-M2_XY1"),
+                      to = c("HEY", "WHAT"))     
+      
+      
+      # extract all strings in alphanumeric variable 
+      # http://stackoverflow.com/questions/17215789/extract-a-substring-in-r-according-to-a-pattern   
+      gsub("[0-9]", "", d)   
+```
+
+```{r newpage, echo=FALSE, results='asis'}        
+
+      cat("\\clearpage\n\n")  
+
+```
+ 
+ 
+# CONCLUSION
+ 
+# REFERENCES
+ 
+# COMPUTING ENVIRONMENT
+ 
+```{r, echo=FALSE}
+options(width=70)
+opts_knit$set(root.dir = wd)   ##THIS SETS YOUR WORKING DIRECTORY
+sessionInfo()
+print(wd)
+```
+ 
+```{r echo=FALSE}
+ 
+stopTime<-proc.time()
+ 
+```
+ 
+This took `r (stopTime-startTime)[1][[1]]` seconds to execute.
